@@ -1,0 +1,55 @@
+service: http-api-devices
+
+provider:
+  name: aws
+  runtime: python3.8
+  stage: dev
+  region: eu-west-1
+  environment:
+    DEVICES_TABLE: Devices
+  httpApi:
+    name: "api-devices"
+    payload: "2.0"
+    cors: true
+  tracing:
+    lambda: true
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        Fn::GetAtt:
+          - DevicesTable
+          - Arn
+
+functions:
+  listDevices:
+    handler: devices/list.main
+    name: listDevices
+    events:
+      - httpApi:
+          method: GET
+          path: /devices
+
+resources:
+  Resources:
+    DevicesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Devices
+        AttributeDefinitions:
+          - AttributeName: pk
+            AttributeType: S
+          - AttributeName: sk
+            AttributeType: S
+        KeySchema:
+          - AttributeName: pk
+            KeyType: HASH
+          - AttributeName: sk
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
