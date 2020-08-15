@@ -44,6 +44,14 @@ functions:
           method: POST
           path: /devices
 
+  deleteDevice:
+    handler: devices/delete.main
+    name: deleteDevice
+    events:
+      - httpApi:
+          method: DELETE
+          path: /devices/{device}
+
 resources:
   Resources:
     DevicesTable:
