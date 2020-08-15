@@ -6,7 +6,7 @@ from boto3.dynamodb.conditions import Key
 dynamodb = boto3.resource("dynamodb")
 
 
-def transform_item(pk: str, sk: str, name: str) -> dict:
+def transform_item(pk: str, sk: str, name: str, **kwargs: dict) -> dict:
     return {"device": sk, "name": name}
 
 
