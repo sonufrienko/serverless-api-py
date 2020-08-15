@@ -36,6 +36,14 @@ functions:
           method: GET
           path: /devices
 
+  createDevice:
+    handler: devices/create.main
+    name: createDevice
+    events:
+      - httpApi:
+          method: POST
+          path: /devices
+
 resources:
   Resources:
     DevicesTable:
