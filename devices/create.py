@@ -2,10 +2,16 @@ import json
 import os
 import time
 import uuid
-
 import boto3
+from jsonschema import validate, exceptions
 
 dynamodb = boto3.resource("dynamodb")
+
+item_schema = {
+    "type": "object",
+    "properties": {"name": {"type": "string", "maxLength": 50},},
+    "required": ["name"],
+}
 
 
 def get_device_item(user_id, data: dict) -> dict:
@@ -22,13 +28,25 @@ def get_device_item(user_id, data: dict) -> dict:
     return item
 
 
+def validate_body(data: dict):
+    try:
+        validate(instance=data, schema=item_schema)
+    except exceptions.ValidationError as err:
+        return err.message
+
+
 def main(event, context):
     # todo: replace with <token.sub>
     user_id = "sergey.onufrienko"
     data = json.loads(event["body"])
 
-    if "name" not in data:
-        raise Exception("Missing field - name")
+    validation_error = validate_body(data)
+
+    if validation_error:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"success": False, "errors": [validation_error]}),
+        }
 
     table = dynamodb.Table(os.environ["DEVICES_TABLE"])
     item = get_device_item(user_id, data)
